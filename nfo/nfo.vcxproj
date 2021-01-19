@@ -252,8 +252,8 @@
   <ItemGroup>
     <ClInclude Include="..\common\LeoHelpers.h" />
     <ClInclude Include="..\common\messages.hpp" />
-    <ClInclude Include="..\common\plugin_support.h" />
-    <ClInclude Include="..\common\viewer_plugins.h" />
+    <ClInclude Include="..\common\plugin support.h" />
+    <ClInclude Include="..\common\viewer plugins.h" />
     <ClInclude Include="nfo.h" />
     <ClInclude Include="NfoViewerWindow.h" />
     <ClInclude Include="resource.h" />

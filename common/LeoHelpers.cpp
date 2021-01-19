@@ -40,22 +40,22 @@ bool LeoHelpers::LeetRegQueryValue(HKEY hKeyParent, const TCHAR *szKeyPath, cons
 			const DWORD dwZeroPadding = 8;
 
 			BYTE *allocatedBuffer = NULL;
-			DWORD dwAllocatedBufferSize = 0; // For HKEY_PERFORMANCE_DATA, really.
+			size_t AllocatedBufferSize = 0; // For HKEY_PERFORMANCE_DATA, really.
 
 			// Get the required buffer size by giving NULL for data buffer.
 			regRes = RegQueryValueEx(hKeyToReadValueFrom, szValueName, 0, pdwType, NULL, pcbData);
 
 			if (ERROR_SUCCESS == regRes)
 			{
-				dwAllocatedBufferSize = *pcbData;
-				allocatedBuffer = new BYTE[dwAllocatedBufferSize + dwZeroPadding];
+				AllocatedBufferSize = *pcbData;
+				allocatedBuffer = new BYTE[AllocatedBufferSize + dwZeroPadding];
 			}
 			else if (ERROR_MORE_DATA == regRes)
 			{
 				// Most likely tried to read HKEY_PERFORMANCE_DATA. *pcdData is undefined at this point.
 				*pcbData = 1024; // Must be a number x such that (Int(x/2) > 0)
-				dwAllocatedBufferSize = *pcbData;
-				allocatedBuffer = new BYTE[dwAllocatedBufferSize + dwZeroPadding];
+				AllocatedBufferSize = *pcbData;
+				allocatedBuffer = new BYTE[AllocatedBufferSize + dwZeroPadding];
 			}
 			else
 			{
@@ -70,7 +70,7 @@ bool LeoHelpers::LeetRegQueryValue(HKEY hKeyParent, const TCHAR *szKeyPath, cons
 				if (ERROR_SUCCESS == regRes)
 				{
 					// Zero out the padding we added.
-					ZeroMemory(allocatedBuffer + dwAllocatedBufferSize, dwZeroPadding);
+					ZeroMemory(allocatedBuffer + AllocatedBufferSize, dwZeroPadding);
 
 					*plpData = allocatedBuffer;
 					allocatedBuffer = NULL;
@@ -80,9 +80,9 @@ bool LeoHelpers::LeetRegQueryValue(HKEY hKeyParent, const TCHAR *szKeyPath, cons
 				{
 					// Try a larger buffer.
 					delete [] allocatedBuffer;
-					*pcbData = dwAllocatedBufferSize + (dwAllocatedBufferSize/2);
-					dwAllocatedBufferSize = *pcbData;
-					allocatedBuffer = new BYTE[dwAllocatedBufferSize + dwZeroPadding];
+					*pcbData = static_cast<DWORD>(AllocatedBufferSize + (AllocatedBufferSize/2));
+					AllocatedBufferSize = *pcbData;
+					allocatedBuffer = new BYTE[AllocatedBufferSize + dwZeroPadding];
 				}
 				else
 				{
@@ -1274,7 +1274,7 @@ bool LeoHelpers::GetShortFilePath(std::wstring *pstrResult, const wchar_t *szInp
 
 	if (dwRes > 0)
 	{
-		wchar_t *szBuf = new(std::nothrow) wchar_t[dwRes + 1];
+		wchar_t *szBuf = new(std::nothrow) wchar_t[(size_t)dwRes + 1];
 
 		if (szBuf)
 		{
@@ -3084,6 +3084,7 @@ LeoHelpers::ThemeHelper::ThemeHelper()
 		m_fEnableThemeDialogTexture = NULL;
 	}
 
+	m_sizePart = SIZE();
 	m_hbmpDIB = NULL;
 	m_hdcMemTemp = NULL;
 	m_hBrushTemp = NULL;
@@ -3498,11 +3499,11 @@ int *createCoeffInt(int nLen, int nNewLen, bool bShrink)
 	int nNorm  = bShrink ? (nNewLen<<12)/nLen : 0x1000;
 	int	nDenom = bShrink ? nLen               : nNewLen;
 
-	int *pResult = new(std::nothrow) int[2*(nLen+1)];
+	int *pResult = new(std::nothrow) int[2*((size_t)nLen+1)];
 
 	if (NULL != pResult)
 	{
-		ZeroMemory(pResult, 2*(nLen+1)*sizeof(int));
+		ZeroMemory(pResult, 2*((size_t)nLen+1)*sizeof(int));
 
 		int *pCoeff = pResult;
 
@@ -3555,7 +3556,7 @@ bool stretchPreserveAlpha_Shrink(const BYTE *pInBuff,DWORD dwWidth,DWORD dwHeigh
 
 	pRowCoeff=createCoeffInt(dwWidth,dwNewWidth,true);
 	pColCoeff=createCoeffInt(dwHeight,dwNewHeight,true);
-	pdwBuff = new(std::nothrow) DWORD[GISCALE_PIXBYTES*2*(dwNewWidth)];
+	pdwBuff = new(std::nothrow) DWORD[GISCALE_PIXBYTES*2*size_t(dwNewWidth)];
 
 	if (pRowCoeff && pColCoeff && pdwBuff)
 	{
@@ -3563,9 +3564,9 @@ bool stretchPreserveAlpha_Shrink(const BYTE *pInBuff,DWORD dwWidth,DWORD dwHeigh
 
 		pYCoeff=pColCoeff;
 		pdwCurrLn=pdwBuff;
-		pdwNextLn=pdwBuff+GISCALE_PIXBYTES*(dwNewWidth);
+		pdwNextLn=pdwBuff+GISCALE_PIXBYTES*size_t(dwNewWidth);
 
-		ZeroMemory(pdwBuff,2*dwBuffLn);
+		ZeroMemory(pdwBuff,(size_t)2*dwBuffLn);
 
 		y = 0;
 		while (y<dwNewHeight)
@@ -3756,7 +3757,7 @@ RGBQUAD *LeoHelpers::RGBQAllocateStretchPreserveAlpha(DWORD dwNewWidth, DWORD dw
 		// Get expanded size and allocate a new bitmap for it
 		DWORD dww=max(dwNewWidth,dwInWidth);
 		DWORD dwh=max(dwNewHeight,dwInHeight);
-		lpNewBits = new(std::nothrow) RGBQUAD[ dww*dwh ];
+		lpNewBits = new(std::nothrow) RGBQUAD[ (size_t)dww*dwh ];
 
 		if (!lpNewBits)
 		{
@@ -3780,7 +3781,7 @@ RGBQUAD *LeoHelpers::RGBQAllocateStretchPreserveAlpha(DWORD dwNewWidth, DWORD dw
 		DWORD dww=min(dwNewWidth,dwInWidth);
 		DWORD dwh=min(dwNewHeight,dwInHeight);
 
-		RGBQUAD *lpShrinkBits = new(std::nothrow) RGBQUAD[ dww*dwh ];
+		RGBQUAD *lpShrinkBits = new(std::nothrow) RGBQUAD[ (size_t)dww*dwh ];
 
 		if (!lpShrinkBits)
 		{
@@ -4614,7 +4615,7 @@ bool LeoHelpers::GetPrivateProfileString(std::basic_string< TCHAR > *pstrResult,
 		}
 		else
 		{
-			if (dwRes != 0)
+			if (dwRes != 0 && szBuffer)
 			{
 				*pstrResult = szBuffer;
 				bResult = true;

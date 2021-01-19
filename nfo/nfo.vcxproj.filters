@@ -37,16 +37,16 @@
     <ClInclude Include="NfoViewerWindow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\plugin_support.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\viewer_plugins.h">
+    <ClInclude Include="..\common\plugin support.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\viewer plugins.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

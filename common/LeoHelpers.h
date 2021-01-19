@@ -1283,7 +1283,7 @@ enum _LI_METRIC
 // From uxtheme.h
 
 #ifndef THEMESIZE
-typedef enum THEMESIZE
+enum THEMESIZE
 {
 	TS_MIN,             // minimum size
 	TS_TRUE,            // size without stretching
