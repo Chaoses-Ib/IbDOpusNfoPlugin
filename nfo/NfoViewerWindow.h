@@ -18,6 +18,9 @@ protected:
 	bool m_bReportedFontError;
 	HFONT m_hFont;
 	//int m_nFontSize;
+	COLORREF m_FontColor;
+	COLORREF m_BackgroundColor;
+	HBRUSH m_BackgroundBrush;
 #ifndef UNICODE
 	LOGFONT *m_pCurrentLogFont;
 	std::map< LONG, LOGFONT > m_mapFontWidthToLogFont;

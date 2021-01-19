@@ -3,6 +3,9 @@
 #include "nfo.h"
 #include "nfoviewerwindow.h"
 
+#include <sstream>
+#include <iomanip>
+
 CNfoViewerWindow::CNfoViewerWindow(HMODULE hDllModule, HWND hWnd, LPRECT lpRc, DWORD dwFlags)
 :	m_hWnd(hWnd)
 ,	m_hInstance(hDllModule)
@@ -71,6 +74,82 @@ CNfoViewerWindow::CNfoViewerWindow(HMODULE hDllModule, HWND hWnd, LPRECT lpRc, D
 
 	updateFont(hWnd);
 
+	if (![&]() -> bool {
+		using namespace std;
+		using std::wstring;
+		using std::wistringstream;
+
+		auto output = [](wstring s) {
+#ifdef _DEBUG
+			OutputDebugStringW((L"Ib: " + s).c_str());
+#endif
+		};
+
+		auto helper = DOpusPluginHelper();
+		wchar_t config_path[MAX_PATH];
+		helper.GetConfigPath(OPUSPATH_CONFIG, config_path, _countof(config_path));
+
+		wstring config_path_text = config_path;
+		LeoHelpers::AppendPathString(&config_path_text, L"text.oxc");
+		output(config_path_text);
+
+		HANDLE root;
+		root = helper.XMLLoadFile(config_path_text.c_str());
+		if (!root) return false;
+
+		auto getname = [&helper](HANDLE node) {
+			int size;
+			helper.XMLGetNodeName(node, nullptr, &size);
+			wchar_t* buffer = new wchar_t[size];
+			helper.XMLGetNodeName(node, buffer, &size);
+			wstring name = buffer;
+			delete[] buffer;
+			return name;
+		};
+		auto getvalue = [&helper](HANDLE node) {
+			int size;
+			helper.XMLGetNodeValue(node, nullptr, &size);
+			wchar_t* buffer = new wchar_t[size];
+			helper.XMLGetNodeValue(node, buffer, &size);
+			wstring value = buffer;
+			delete[] buffer;
+			return value;
+		};
+
+		output(getname(root));
+		if (getname(root) == L"text") {
+			for (HANDLE node = helper.XMLFirstChildNode(root); node; node = helper.XMLNextNode(node)) {
+				wstring name = getname(node);
+				output(name);
+				if (name == L"text_colors") {
+					output(getvalue(node));
+					wistringstream ss(getvalue(node));
+
+					ss >> setbase(0);
+					ss >> m_FontColor;
+					if (ss.peek() == L',')
+						ss.ignore();
+					ss >> m_BackgroundColor;
+					output(to_wstring(m_FontColor));
+					output(to_wstring(m_BackgroundColor));
+
+					if (m_BackgroundColor != -1)
+						m_BackgroundBrush = CreateSolidBrush(m_BackgroundColor);
+
+					helper.XMLFreeFile(root);
+					return true;
+				}
+			}
+		}
+
+		helper.XMLFreeFile(root);
+		return false;
+		}()) {
+		m_FontColor = RGB(0, 0, 0);
+		m_BackgroundColor = -1;
+		m_BackgroundBrush = GetSysColorBrush(COLOR_WINDOW);
+	}
+
 	updateCapabilities(NULL);
 }
 
@@ -90,6 +169,8 @@ CNfoViewerWindow::~CNfoViewerWindow(void)
 		DeleteObject(m_hFont);
 		m_hFont = NULL;
 	}
+
+	DeleteObject(m_BackgroundBrush);
 
 	reset(true);
 }
@@ -192,13 +273,18 @@ LRESULT WINAPI CNfoViewerWindow::wndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARA
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, NULL);
 			return 0;
 
-		case WM_CTLCOLORSTATIC:
+		case WM_CTLCOLORSTATIC:  //not WM_CTLCOLOREDIT ?
+			SetTextColor((HDC)wParam, pThis->m_FontColor);
+			if (pThis->m_BackgroundColor != -1)
+				SetBkColor((HDC)wParam, pThis->m_BackgroundColor);
+			return (LRESULT)pThis->m_BackgroundBrush;
+			/*
 			if (reinterpret_cast<HWND>(lParam) == pThis->m_hWndEdit)
 			{
 				return(reinterpret_cast<LRESULT>(GetSysColorBrush(COLOR_WINDOW)));
 			}
 			return NULL;
-
+			*/
 		case DVPLUGINMSG_GETCAPABILITIES:
 			pThis->updateCapabilities(NULL);
 			return pThis->m_dwCapabilities;
