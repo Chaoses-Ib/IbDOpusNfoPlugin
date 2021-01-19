@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LeoHelpers.h"
+#include <locale.h>
 
 bool LeoHelpers::LeetRegQueryValue(HKEY hKeyParent, const TCHAR *szKeyPath, const TCHAR *szValueName, REGSAM sam,
 									   DWORD *pdwType, void **plpData, DWORD *pcbData)

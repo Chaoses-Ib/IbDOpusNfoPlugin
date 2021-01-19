@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 // Macros suck but I need constant expressions for switch statements. :-(
 
 #define MAKE64BITVERSIONNUMBER(a,b,c,d) ((((DWORD64)(a))<<48) + (((DWORD64)(b))<<32) + (((DWORD64)(c))<<16) + (((DWORD64)(d))<<00))
