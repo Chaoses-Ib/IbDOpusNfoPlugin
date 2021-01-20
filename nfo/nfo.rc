@@ -80,13 +80,13 @@ BEGIN
             VALUE "Comments", "NFO Viewer Plugin for Directory Opus (http://www.dopus.com)"
             VALUE "CompanyName", "https://github.com/Chaoses-Ib/IbDOpusNfoPlugin"
             VALUE "FileDescription", "NFO Viewer Plugin"
-            VALUE "FileVersion", "0.2.0.0"
+            VALUE "FileVersion", "0, 2, 0, 0"
             VALUE "InternalName", "NFO"
             VALUE "LegalCopyright", "Copyright (C) 2004-2009 Leo Davidson"
             VALUE "LegalTrademarks", "Directory Opus, Opus, DOpus, DirOpus, OpusPC, PCOpus are trademarks of GP Software."
             VALUE "OriginalFilename", "nfo.dll"
             VALUE "ProductName", "nfo Dynamic Link Library"
-            VALUE "ProductVersion", "0.2.0.0"
+            VALUE "ProductVersion", "0, 2, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
