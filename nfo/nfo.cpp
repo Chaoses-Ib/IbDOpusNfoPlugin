@@ -1,4 +1,4 @@
-// nfo.cpp : Defines the entry point for the DLL application.
+﻿// nfo.cpp : Defines the entry point for the DLL application.
 //
 
 #include "stdafx.h"
@@ -6,6 +6,14 @@
 #include "nfo.h"
 #include "LeoHelpers.h"
 #include "NfoViewerWindow.h"
+#include <IbWinCppLib/WinCppLib.hpp>
+
+constexpr bool debug =
+#ifdef VIEWER_DEBUG
+	1;
+#else
+	0;
+#endif
 
 // {0247DBD1-9679-44c3-8171-B586121E9D0D}
 static const GUID GUIDPlugin_nfo =
@@ -35,6 +43,11 @@ void S_FreeWindowClasses()
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
+	if constexpr (debug) {
+		const wchar_t* reason_table[] = { L"DLL_PROCESS_DETACH", L"DLL_PROCESS_ATTACH", L"DLL_THREAD_ATTACH", L"DLL_THREAD_DETACH" };
+		ib::DebugOStream() << "DllMain: " << reason_table[dwReason] << std::endl;
+	}
+
 	switch(dwReason)
 	{
 	case(DLL_PROCESS_ATTACH):
@@ -59,6 +72,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 
 BOOL DVP_Init()
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_Init" << std::endl;
+
 	// Only old versions of Opus will call DVP_Init when we also expose DVP_InitEx.
 	// We use this as a clean, definite way to stop old versions loading us by mistake.
 
@@ -67,6 +83,9 @@ BOOL DVP_Init()
 
 BOOL DVP_InitEx(LPDVPINITEXDATA pInitExData)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_InitEx" << std::endl;
+
 	// Note: DVP_InitEx won't even be called before Opus 9, which is the minimum supported version.
 
 	// Note: We assume that Opus has initialized the common controls and COM for all
@@ -110,6 +129,9 @@ BOOL DVP_InitEx(LPDVPINITEXDATA pInitExData)
 
 void DVP_Uninit(void)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_Uninit" << std::endl;
+
 	LeoHelpers::CriticalSectionScoper css(&s_cs);
 
 	if (0 < s_refCount)
@@ -123,11 +145,17 @@ void DVP_Uninit(void)
 
 BOOL DVP_USBSafe(LPOPUSUSBSAFEDATA pUSBSafeData)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_USBSafe" << std::endl;
+
 	return TRUE;
 }
 
 BOOL DVP_Identify(LPVIEWERPLUGININFO lpVPInfo)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_Identify" << std::endl;
+
 	BOOL bResult = FALSE;
 
 	lpVPInfo->dwFlags = DVPFIF_CanHandleStreams
@@ -155,6 +183,9 @@ BOOL DVP_Identify(LPVIEWERPLUGININFO lpVPInfo)
 
 BOOL DVP_IdentifyFile(HWND hWnd,LPTSTR lpszName,LPVIEWERPLUGINFILEINFO lpVPFileInfo,HANDLE hAbortEvent)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_IdentifyFile: " << lpszName << std::endl;
+
 	lpVPFileInfo->dwFlags = DVPFIF_CanReturnViewer;
 
 	lpVPFileInfo->wMajorType = DVPMajorType_Text;
@@ -174,6 +205,9 @@ BOOL DVP_IdentifyFile(HWND hWnd,LPTSTR lpszName,LPVIEWERPLUGINFILEINFO lpVPFileI
 
 BOOL DVP_IdentifyFileStream(HWND hWnd,LPSTREAM lpStream,LPTSTR lpszName,LPVIEWERPLUGINFILEINFO lpVPFileInfo,DWORD dwStreamFlags)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_IdentifyFileStream: " << lpszName << std::endl;
+
 	return(DVP_IdentifyFile(hWnd, lpszName, lpVPFileInfo, NULL));
 }
 
@@ -193,5 +227,8 @@ BOOL DVP_IdentifyFileStream(HWND hWnd,LPSTREAM lpStream,LPTSTR lpszName,LPVIEWER
 
 HWND DVP_CreateViewer(HWND hWnd,LPRECT lpRc,DWORD dwFlags)
 {
+	if constexpr (debug)
+		ib::DebugOStream() << "DVP_CreateViewer" << std::endl;
+
 	return(CNfoViewerWindow::CreateViewerWindow(s_hDllModule, hWnd, lpRc, dwFlags));
 }
