@@ -41,11 +41,23 @@ void S_FreeWindowClasses()
 	}
 }
 
+#pragma managed(push, off)
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
+	//DO NOT USE MANAGED FUNC/CLASS
 	if constexpr (debug) {
+		/*
 		const wchar_t* reason_table[] = { L"DLL_PROCESS_DETACH", L"DLL_PROCESS_ATTACH", L"DLL_THREAD_ATTACH", L"DLL_THREAD_DETACH" };
 		ib::DebugOStream() << "DllMain: " << reason_table[dwReason] << std::endl;
+		*/
+
+		const wchar_t* reason_table[] = {
+			L"DllMain: DLL_PROCESS_DETACH\n",
+			L"DllMain: DLL_PROCESS_ATTACH\n",
+			L"DllMain: DLL_THREAD_ATTACH\n",
+			L"DllMain: DLL_THREAD_DETACH\n"
+		};
+		OutputDebugStringW(reason_table[dwReason]);
 	}
 
 	switch(dwReason)
@@ -69,6 +81,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 
 	return TRUE;
 }
+#pragma managed(pop)
 
 BOOL DVP_Init()
 {
